@@ -6,3 +6,19 @@ services:
       - MONGO_URI=${MONGO_URI}
     ports:
       - "5000:5000"
+
+  welcome_service:
+    build: .
+    command: python service2_welcome.py
+    ports:
+      - "5001:5001"
+    volumes:
+      - ./output_letters:/app/output
+
+  offer_service:
+    build: .
+    command: python service3_offer.py
+    ports:
+      - "5002:5002"
+    volumes:
+      - ./output_letters:/app/output

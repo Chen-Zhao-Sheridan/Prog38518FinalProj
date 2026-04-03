@@ -171,10 +171,18 @@ def process_pending_customers():
         else:
             summary["invalid_count"] += 1
 
-        if next_service == "welcome":
-            summary["welcome_trigger_attempts"] += 1
-        elif next_service == "offer":
-            summary["offer_trigger_attempts"] += 1
+        if next_service in ["welcome", "offer"]:
+            if next_service == "welcome":
+                summary["welcome_trigger_attempts"] += 1
+            else:
+                summary["offer_trigger_attempts"] += 1
+
+            trigger_result = trigger_downstream_service(customer, next_service, update_fields)
+
+            if trigger_result.get("success"):
+                summary["trigger_successes"] += 1
+            else:
+                summary["trigger_failures"] += 1
 
     return summary
 
