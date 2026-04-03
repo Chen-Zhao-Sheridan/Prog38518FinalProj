@@ -31,12 +31,6 @@ Check health:
 curl http://localhost:5000/health
 ```
 
-Get one customer by account number:
-
-```bash
-curl http://localhost:5000/customer/12345678
-```
-
 Run validation:
 
 ```bash
@@ -56,4 +50,4 @@ Each processed customer gets only these validation fields:
 - `is_valid`
 - `validation_errors`
 
-Use `POST /reset-validation` to clear those fields and any legacy validator fields for all customers already stored in Atlas.
+Use `POST /reset-validation` to clear those fields for all customers already stored in Atlas.

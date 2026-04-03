@@ -12,7 +12,6 @@ from pymongo.errors import PyMongoError
 DB_NAME = "banking"
 COLLECTION_NAME = "customers"
 
-# Can use this call next service?
 WELCOME_SERVICE_URL = "http://welcome_service:5001/generate"
 OFFER_SERVICE_URL = "http://offer_service:5002/generate"
 
@@ -129,6 +128,22 @@ def build_trigger_payload(customer, update_fields):
     payload["customer_id"] = str(customer["_id"])
     return payload
 
+
+def trigger_downstream_service(customer, next_service, update_fields):
+    if next_service == "none":
+        return {"attempted": False, "success": False}
+
+    url = WELCOME_SERVICE_URL if next_service == "welcome" else OFFER_SERVICE_URL
+    payload = build_trigger_payload(customer, update_fields)
+
+    try:
+        response = requests.post(url, json=payload, timeout=5)
+        response.raise_for_status()
+        return {"attempted": True, "success": True}
+    except requests.RequestException:
+        return {"attempted": True, "success": False}
+
+
 def process_pending_customers():
     collection = get_collection()
     pending_customers = list(
@@ -149,10 +164,7 @@ def process_pending_customers():
         validation_result = validate_customer(customer)
         update_fields = build_update_fields(validation_result)
         next_service = validation_result["next_service"]
-        collection.update_one(
-            {"_id": customer["_id"]},
-            {"$set": update_fields, "$unset": LEGACY_FIELDS_TO_CLEAR},
-        )
+        collection.update_one({"_id": customer["_id"]}, {"$set": update_fields})
 
         if update_fields["is_valid"]:
             summary["valid_count"] += 1
